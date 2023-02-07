@@ -17,11 +17,12 @@ class Example(QWidget):
         self.delta = "0.005"
         self.up = 0
         self.right = 0
+        self.comboBox.addItems(['схема', 'спутник', 'гибрид'])
         self.getImage()
         self.initUI()
-        #self.pushButton.clicked.connect(self.get_adress)
         self.pushButton_up.clicked.connect(self.do_plus)
         self.pushButton_down.clicked.connect(self.do_minus)
+        self.scheme = str(self.comboBox.currentText())
 
 
     def do_up(self):
@@ -88,10 +89,16 @@ class Example(QWidget):
             "featureMember"][0]["GeoObject"]
         toponym_coodrinates = toponym["Point"]["pos"]
         self.toponym_longitude, self.toponym_lattitude = toponym_coodrinates.split(" ")
+        if self.comboBox.currentText() == 'схема':
+            scheme = "map"
+        elif self.comboBox.currentText() == 'спутник':
+            scheme = "sat"
+        else:
+            scheme = "sat,skl"
         map_params = {
             "ll": ",".join([str(float(self.toponym_longitude) + self.up), str(float(self.toponym_lattitude) + self.right)]),
             "spn": ",".join([self.delta, self.delta]),
-            "l": "map"
+            "l": scheme
         }
         map_api_server = "http://static-maps.yandex.ru/1.x/"
         response = requests.get(map_api_server, params=map_params)

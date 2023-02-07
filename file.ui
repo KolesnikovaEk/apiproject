@@ -52,6 +52,16 @@
     <string>-</string>
    </property>
   </widget>
+  <widget class="QComboBox" name="comboBox">
+   <property name="geometry">
+    <rect>
+     <x>490</x>
+     <y>210</y>
+     <width>104</width>
+     <height>26</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
