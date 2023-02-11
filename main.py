@@ -8,6 +8,7 @@ import requests
 from PIL import Image
 
 SCREEN_SIZE = [900, 450]
+#git
 
 
 class Example(QWidget):
