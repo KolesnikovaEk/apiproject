@@ -8,7 +8,6 @@ import requests
 from PIL import Image
 
 SCREEN_SIZE = [900, 450]
-#git
 
 
 class Example(QWidget):
@@ -18,6 +17,7 @@ class Example(QWidget):
         self.map_file = None
         self.toponym_longitude = None
         self.toponym_lattitude = None
+        self.mark = False
 
         uic.loadUi('file.ui', self)
         self.adr = 'Москва, ул.Тверская'
@@ -28,16 +28,24 @@ class Example(QWidget):
         self.initUI()
 
         self.findbutton.clicked.connect(self.get_adress)
+        self.checkBox.clicked.connect(self.indexx)
+        self.index.hide()
         self.deletebutton.clicked.connect(self.delete)
-        self.pushButton_up.clicked.connect(self.do_plus)
-        self.pushButton_down.clicked.connect(self.do_minus)
+        self.pushButton_up.clicked.connect(self.do_minus)
+        self.pushButton_down.clicked.connect(self.do_plus)
+
+    def indexx(self):
+        if self.checkBox.isChecked():
+            self.index.show()
+        else:
+            self.index.hide()
 
     def delete(self):
         self.findline.clear()
         self.adr = 'Москва, ул.Тверская'
         self.get_image()
         self.initUI()
-        # remove mark
+        self.mark = False
 
     def do_up(self):
         self.up = self.up + float(self.delta)
@@ -75,6 +83,9 @@ class Example(QWidget):
 
     def get_adress(self):
         self.adr = self.findline.text()
+        self.mark = True
+        self.up = 0
+        self.right = 0
         self.get_image()
         self.initUI()
 
@@ -105,13 +116,25 @@ class Example(QWidget):
         json_response = response.json()
         toponym = json_response["response"]["GeoObjectCollection"][
             "featureMember"][0]["GeoObject"]
+
         toponym_coodrinates = toponym["Point"]["pos"]
+        address = toponym["metaDataProperty"]["GeocoderMetaData"]["Address"]
+        self.address.setText(address["formatted"])
+        try:
+            self.index.setText(address["postal_code"])
+        except KeyError:
+            self.index.setText("Индекса у этого адреса нет(")
         self.toponym_longitude, self.toponym_lattitude = toponym_coodrinates.split(" ")
+
+        line = ''
+        if self.mark:
+            line = f"{self.toponym_longitude},{self.toponym_lattitude},pm2ntl"
         map_params = {
             "ll": ",".join([str(float(self.toponym_longitude) + self.up),
                             str(float(self.toponym_lattitude) + self.right)]),
             "spn": ",".join([self.delta, self.delta]),
-            "l": "map"
+            "l": "map",
+            "pt": line,
         }
         map_api_server = "http://static-maps.yandex.ru/1.x/"
         response = requests.get(map_api_server, params=map_params)
