@@ -24,8 +24,6 @@ class Example(QWidget):
         self.delta = "0.005"
         self.up = 0
         self.right = 0
-        self.get_image()
-        self.initUI()
 
         self.findbutton.clicked.connect(self.get_adress)
         self.checkBox.clicked.connect(self.indexx)
@@ -33,6 +31,17 @@ class Example(QWidget):
         self.deletebutton.clicked.connect(self.delete)
         self.pushButton_up.clicked.connect(self.do_minus)
         self.pushButton_down.clicked.connect(self.do_plus)
+        self.comboBox.addItems(['схема', 'спутник', 'гибрид'])
+        self.scheme = str(self.comboBox.currentText())
+        self.pushButton_scheme.clicked.connect(self.show_scheme)
+
+        self.get_image()
+        self.initUI()
+
+
+    def show_scheme(self):
+        self.get_image()
+        self.initUI()
 
     def indexx(self):
         if self.checkBox.isChecked():
@@ -58,7 +67,7 @@ class Example(QWidget):
         self.initUI()
 
     def do_right(self):
-        self.right = self.up + float(self.delta)
+        self.right = self.right + float(self.delta)
         self.get_image()
         self.initUI()
 
@@ -67,14 +76,15 @@ class Example(QWidget):
         self.get_image()
         self.initUI()
 
+
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_W:
+        if event.key() == Qt.Key_Up:
             self.do_up()
-        elif event.key() == Qt.Key_S:
+        elif event.key() == Qt.Key_Down:
             self.do_down()
-        elif event.key() == Qt.Key_D:
+        elif event.key() == Qt.Key_Right:
             self.do_right()
-        elif event.key() == Qt.Key_A:
+        elif event.key() == Qt.Key_Left:
             self.do_left()
         elif event.key() == Qt.Key_Plus:
             self.do_plus()
@@ -90,20 +100,21 @@ class Example(QWidget):
         self.initUI()
 
     def do_minus(self):
-        self.delta = str(float(self.delta) + 0.005)
-        if float(self.delta) > 1:
-            self.delta = '1'
+        self.delta = str(float(self.delta) * 2)
+        if float(self.delta) > 20:
+            self.delta = '20'
         self.get_image()
         self.initUI()
 
     def do_plus(self):
-        self.delta = str(float(self.delta) - 0.005)
+        self.delta = str(float(self.delta) / 2)
         if float(self.delta) < 0.00001:
             self.delta = '0.00001'
         self.get_image()
         self.initUI()
 
     def get_image(self):
+        self.image.setFocus()
         toponym_to_find = self.adr
         geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
         geocoder_params = {
@@ -126,14 +137,21 @@ class Example(QWidget):
             self.index.setText("Индекса у этого адреса нет(")
         self.toponym_longitude, self.toponym_lattitude = toponym_coodrinates.split(" ")
 
+        if self.comboBox.currentText() == 'схема':
+            scheme = "map"
+        elif self.comboBox.currentText() == 'спутник':
+            scheme = "sat"
+        else:
+            scheme = "sat,skl"
+
         line = ''
         if self.mark:
             line = f"{self.toponym_longitude},{self.toponym_lattitude},pm2ntl"
         map_params = {
-            "ll": ",".join([str(float(self.toponym_longitude) + self.up),
-                            str(float(self.toponym_lattitude) + self.right)]),
+            "ll": ",".join([str(float(self.toponym_longitude) + self.right),
+                            str(float(self.toponym_lattitude) + self.up)]),
             "spn": ",".join([self.delta, self.delta]),
-            "l": "map",
+            "l": scheme,
             "pt": line,
         }
         map_api_server = "http://static-maps.yandex.ru/1.x/"
