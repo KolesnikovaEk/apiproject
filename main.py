@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel
 import requests
 from PIL import Image
 
-SCREEN_SIZE = [900, 450]
+SCREEN_SIZE = [600, 450]
 
 
 class Example(QWidget):
@@ -147,12 +147,14 @@ class Example(QWidget):
         line = ''
         if self.mark:
             line = f"{self.toponym_longitude},{self.toponym_lattitude},pm2ntl"
+        self.curr_ll = (float(self.toponym_longitude) + self.right, float(self.toponym_lattitude) + self.up)
         map_params = {
             "ll": ",".join([str(float(self.toponym_longitude) + self.right),
                             str(float(self.toponym_lattitude) + self.up)]),
             "spn": ",".join([self.delta, self.delta]),
             "l": scheme,
             "pt": line,
+            "size": ",".join(['450', '450'])
         }
         map_api_server = "http://static-maps.yandex.ru/1.x/"
         response = requests.get(map_api_server, params=map_params)
@@ -160,8 +162,28 @@ class Example(QWidget):
         with open(self.map_file, "wb") as file:
             file.write(response.content)
 
+    def mousePressEvent(self, event):
+        if event.x() in range(30, 480) and event.y() in range(50, 360):
+            if event.button() == Qt.LeftButton:
+                k = float(self.delta) / 450
+                x = round((event.x() - 30 - 225) * k + self.curr_ll[0], 8)
+                y = round(-(event.y() - 40 - 225) * k + self.curr_ll[1], 9)
+                print(x, y)
+                self.curr_ll = (x, y)
+                map_params = {
+                    "ll": ",".join([str(x), str(y)]),
+                    "spn": ",".join([self.delta, self.delta]),
+                    "l": "map",
+                    "size": ",".join(['450', '450'])
+                }
+                map_api_server = "http://static-maps.yandex.ru/1.x/"
+                response = requests.get(map_api_server, params=map_params)
+                self.map_file = "map.png"
+                with open(self.map_file, "wb") as file:
+                    file.write(response.content)
+                self.initUI()
+
     def initUI(self):
-        self.setGeometry(100, 100, *SCREEN_SIZE)
         self.setWindowTitle('Отображение карты')
         self.pixmap = QPixmap(self.map_file)
         self.image.setPixmap(self.pixmap)
