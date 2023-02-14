@@ -163,11 +163,13 @@ class Example(QWidget):
             file.write(response.content)
 
     def mousePressEvent(self, event):
-        if event.x() in range(30, 480) and event.y() in range(50, 360):
+        if event.x() in range(31, 481) and event.y() in range(41, 491):
             if event.button() == Qt.LeftButton:
                 k = float(self.delta) / 450
-                x = round((event.x() - 30 - 225) * k + self.curr_ll[0], 8)
-                y = round(-(event.y() - 40 - 225) * k + self.curr_ll[1], 9)
+                print(event.y(), event.x())
+                print(event.y() - 41 - 225, event.x() - 31 - 225)
+                x = round((event.x() - 31 - 225) * 2 * k + self.curr_ll[0], 8)
+                y = round(-(event.y() - 41 - 225) * k + self.curr_ll[1], 8)
                 print(x, y)
                 self.curr_ll = (x, y)
                 map_params = {
